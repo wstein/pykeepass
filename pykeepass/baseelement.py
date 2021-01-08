@@ -118,7 +118,10 @@ class BaseElement(object):
                 struct.pack('<Q', diff_seconds)
             ).decode('utf-8')
         else:
-            return self._datetime_to_utc(value).isoformat()
+            return datetime.strftime(
+                self._datetime_to_utc(value),
+                '%Y-%m-%dT%H:%M:%SZ'
+            )
 
     def _decode_time(self, text):
         """Convert base64 time or plaintext time to datetime"""
