@@ -8,7 +8,7 @@ import base64
 import logging
 import os
 import re
-import shutil
+import tempfile
 import uuid
 import zlib
 from copy import deepcopy
@@ -147,20 +147,16 @@ class PyKeePass(object):
             )
         else:
             # save to temporary file to prevent database clobbering
-            # see issues 223, 101
-            # FIXME python2 - use pathlib.Path.withsuffix
-            filename_tmp = filename + '.tmp'
-            try:
-                KDBX.build_file(
+            # fixes issues 223, 101
+            with tempfile.NamedTemporaryFile(dir=os.path.dirname(filename)) as temp:
+                KDBX.build_stream(
                     self.kdbx,
-                    filename_tmp,
+                    temp,
                     password=self.password,
                     keyfile=self.keyfile,
                     transformed_key=transformed_key
                 )
-            except Exception as e:
-                os.remove(filename_tmp)
-            shutil.move(filename_tmp, filename)
+                os.replace(temp.name, filename)
 
     @property
     def version(self):
